@@ -11,7 +11,8 @@
     </head>
 
     <body>
-    
+		
+		
 		<script type="module">
 		
 			import * as THREE from './build/three.module.js';
@@ -23,7 +24,6 @@
 			let camera, controls, scene, renderer, labelRenderer;
 
 			init();
-		
 			animate();
 
 			function init() {
@@ -44,7 +44,7 @@
 
 				//axes
 
-				const axesHelper = new THREE.AxesHelper( 10 );
+				const axesHelper = new THREE.AxesHelper( 100 );
 				axesHelper.position.y = 0.25;
 				scene.add( axesHelper );
 	
@@ -53,31 +53,20 @@
 
 				// grid
 
-				const gridHelper11 = new THREE.GridHelper( 10, 10, 0xffffff, 0xffffff);
-				const gridHelper12 = new THREE.GridHelper( 10, 10, 0xffffff, 0xffffff);
-				const gridHelper13 = new THREE.GridHelper( 10, 10, 0xffffff, 0xffffff);
-				const gridHelper21 = new THREE.GridHelper( 10, 10, 0xffffff, 0xffffff);
-				const gridHelper22 = new THREE.GridHelper( 10, 10, 0xffffff, 0xffffff);
-				const gridHelper23 = new THREE.GridHelper( 10, 10, 0xffffff, 0xffffff);
-				
-				gridHelper11.position.set(0, 0.25, 0);
-				gridHelper12.position.set(10, 0.25, 0);
-				gridHelper13.position.set(-10, 0.25, 0);
-				
-				gridHelper21.position.set(0, 3.25, 0);
-				gridHelper22.position.set(10, 3.25, 0);
-				gridHelper23.position.set(-10, 3.25, 0);
-				
-
-
-				scene.add( gridHelper11,gridHelper12,gridHelper13, gridHelper21, gridHelper22, gridHelper23 );
+				const gridHelper1 = new THREE.GridHelper( 60, 60, 0xffffff, 0xffffff);
+				const gridHelper2 = new THREE.GridHelper( 60, 60, 0xffffff, 0xffffff);
+				gridHelper1.position.y = 0.25;
+				gridHelper2.position.y = 8.25;
+				scene.add(  gridHelper2 );
 
 				//geometries
 							
-				const geometry_box_horizontal = new THREE.BoxGeometry(30.1,0.5,10 );
-				const geometry_box_vertical = new THREE.BoxGeometry( 6.5, 0.1, 10 ); 
-				const geometry_box_vertical2 = new THREE.BoxGeometry(30, 0.1, 6.5 );
-				const geometry_capsule_gps = new THREE.CapsuleGeometry(0.5,0.5);
+				const geometry_box_horizontal = new THREE.BoxGeometry(60,0.5,40 );
+				const geometry_box_vertical = new THREE.BoxGeometry( 16, 0.2, 40 ); 
+				const geometry_box_vertical2 = new THREE.BoxGeometry(60, 0.2, 16 );
+				const geometry_box_vertical_inside_1 = new THREE.BoxGeometry(16, 0.2, 18 );
+				const geometry_box_vertical_inside_2 = new THREE.BoxGeometry(16, 0.2, 25 );
+				
 
 				//materials for objects	
 
@@ -226,80 +215,87 @@
 				 
 				//mesh
 
-				const plane_horizontal1 = new THREE.Mesh( geometry_box_horizontal, material_floor );
-				const plane_horizontal2 = new THREE.Mesh( geometry_box_horizontal, material_floor );
-				
-				const plane_vertical1 = new THREE.Mesh( geometry_box_vertical, material_walls_outside_right  );
-				const plane_vertical2 = new THREE.Mesh( geometry_box_vertical, material_walls_inside );
-				const plane_vertical3 = new THREE.Mesh( geometry_box_vertical, material_walls_inside );
-				const plane_vertical4 = new THREE.Mesh( geometry_box_vertical, material_walls_outside_left );
-				const plane_vertical5 = new THREE.Mesh( geometry_box_vertical2, material_back_wall );
+				function add_object(geometry, material, angle_x, angle_y, angle_z, pos_x, pos_y, pos_z) {
+					const mesh_object = new THREE.Mesh( geometry, material);
+					var angle_x_rad = Math.PI / 180 * angle_x;
+					var angle_y_rad = Math.PI / 180 * angle_y;
+					var angle_z_rad = Math.PI / 180 * angle_z;
+					mesh_object.rotation.set(angle_x_rad, angle_y_rad, angle_z_rad);
+					mesh_object.position.set(pos_x, pos_y, pos_z);
+					scene.add(mesh_object);
 
-				const capsule1 = new THREE.Mesh(geometry_capsule_gps, capsule_material);
-				const capsule2 = new THREE.Mesh(geometry_capsule_gps, capsule_material);
-				const capsule3 = new THREE.Mesh(geometry_capsule_gps, capsule_material);
-				
-				plane_horizontal2.position.y = 3;
-				
+				}
 
-				plane_vertical1.rotateZ(Math.PI/2);
-				plane_vertical2.rotateZ(Math.PI/2);
-				plane_vertical3.rotateZ(Math.PI/2);
-				plane_vertical4.rotateZ(Math.PI/2);
-				plane_vertical5.rotateX(Math.PI/2);
-				plane_vertical5.rotateY(Math.PI);
-				
-				plane_vertical1.position.set(-15, 3, 0);
-				plane_vertical2.position.set(-5, 3, 0);
-				plane_vertical3.position.set(5, 3, 0);
-				plane_vertical4.position.set(15, 3, 0);
-				plane_vertical5.position.set(0, 3, -5);
+				add_object(geometry_box_horizontal, material_floor, 0, 0, 0, 0, 0, 0 );
+				add_object(geometry_box_horizontal, material_floor, 0, 0, 0, 0, 8, 0 );
 
-				capsule1.position.set(-4.5, 3.5, 4.5);
-				capsule2.position.set(4.5, 3.5, 4.5);
-				capsule3.position.set(4.5, 3.5, -4.5);
+				add_object(geometry_box_vertical,  material_walls_outside_right, 0, 0, 90, -30, 8, 0 );
+				add_object(geometry_box_vertical,  material_walls_outside_left, 0, 0, 90, 30, 8, 0 );
+				add_object(geometry_box_vertical2,  material_back_wall, 90, 180, 0, 0, 8, -20 );
 
+				add_object(geometry_box_vertical_inside_1,  material_back_wall, 0, 0, 90, -20, 8, 11 );
+				add_object(geometry_box_vertical_inside_1,  material_back_wall, 0, 0, 90, -20, 8, -11 );
+				add_object(geometry_box_vertical_inside_1,  material_back_wall, 0, 0, 90, 0, 8, 11 );
+				add_object(geometry_box_vertical_inside_1,  material_back_wall, 0, 0, 90, 0, 8, -11 );
 
-				
-				scene.add( plane_horizontal1, plane_horizontal2);
-				scene.add( plane_vertical1, plane_vertical2, plane_vertical3, plane_vertical4, plane_vertical5);
-				scene.add(capsule1, capsule2, capsule3);
-
+				add_object(geometry_box_vertical_inside_2,  material_back_wall, 90, 90, 0, 17.5, 8, 2 );
+				add_object(geometry_box_vertical_inside_2,  material_back_wall, 90, 90, 0, 17.5, 8, -2 );
+				add_object(geometry_box_vertical_inside_2,  material_back_wall, 90, 90, 0, -17.5, 8, 2 );
+				add_object(geometry_box_vertical_inside_2,  material_back_wall, 90, 90, 0, -17.5, 8, -2 );
 				
 				
+
+				// Создание геометрии ступенек
+				var stepWidth = 0.2;
+				var stepHeight = 0.2;
+				var stepDepth = 1;
+				var stepCount = 10;
+				var stepGeometry = new THREE.BoxGeometry(stepWidth, stepHeight, stepDepth);
+
+				// Создание массива для хранения ступенек
+				var steps = [];
+
+				// Создание ступенек и добавление их в массив
+				for (var i = 0; i < stepCount; i++) {
+					var stepMesh = new THREE.Mesh(stepGeometry, material_back_wall);
+					stepMesh.position.y = 8.25 + i * stepHeight;
+					stepMesh.position.x = i * stepWidth;
+					steps.push(stepMesh);
+				}
+
+				// Добавление ступенек на сцену
+				for (var i = 0; i < steps.length; i++) {
+					scene.add(steps[i]);
+				}
+
+				// Создание куба
+				var cubeGeometry = new THREE.BoxGeometry(10, 10, 10);
+				var cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+				var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+				// Создание сферы для вычитания из куба
+				var sphereGeometry = new THREE.SphereGeometry(5, 32, 32);
+				var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+				var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+				sphere.position.set(0, 0, 0);
+
+				// Преобразование геометрий в ThreeCSG объекты
+				var cubeCSG = new ThreeBSP(cube);
+				var sphereCSG = new ThreeBSP(sphere);
+
+				// Вычитание сферы из куба
+				var resultCSG = cubeCSG.subtract(sphereCSG);
+
+				// Преобразование ThreeCSG объекта обратно в Three.js объект
+				var resultGeometry = resultCSG.toGeometry();
+				var resultMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+				var resultMesh = new THREE.Mesh(resultGeometry, resultMaterial);
+
+				// Добавление результирующего объекта на сцену
+				scene.add(resultMesh);
+
 				
-				//fonts
-
-				const gps1_latitude = 55.76637;
-				const gps1_longitude = 37.70504;
-
-				const gps2_latitude = 55.7664;
-				const gps2_longitude = 37.70515;
-
-				const gps3_latitude = 55.76632;
-				const gps3_longitude = 37.7049;
-
 				
-				const div_gps1 = document.createElement( 'div' );
-				div_gps1.className = 'gps1';
-				div_gps1.innerHTML = 'latitude: ' + String(gps1_latitude) + '<br/>' + 'longitude: ' + String(gps1_longitude);
-				const label_gps1 = new CSS2DObject( div_gps1 );
-				label_gps1.position.set( 0, 1, 0 );
-				capsule1.add( label_gps1 );
-
-				const div_gps2 = document.createElement( 'div' );
-				div_gps2.className = 'gps2';
-				div_gps2.innerHTML = 'latitude: ' + String(gps2_latitude) + '<br/>' + 'longitude: ' + String(gps2_longitude);
-				const label_gps2 = new CSS2DObject( div_gps2 );
-				label_gps2.position.set( 0, 1, 0 );
-				capsule2.add( label_gps2 );
-
-				const div_gps3 = document.createElement( 'div' );
-				div_gps3.className = 'gps3';
-				div_gps3.innerHTML = 'latitude: ' + String(gps3_latitude) + '<br/>' + 'longitude: ' + String(gps3_longitude);
-				const label_gps3 = new CSS2DObject( div_gps3 );
-				label_gps3.position.set( 0, 1, 0 );
-				capsule3.add( label_gps3 );
 				
 				
 				// lights
