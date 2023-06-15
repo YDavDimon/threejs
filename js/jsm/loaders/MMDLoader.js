@@ -4,6 +4,7 @@ import {
 	Bone,
 	BufferGeometry,
 	Color,
+	ColorManagement,
 	CustomBlending,
 	TangentSpaceNormalMap,
 	DoubleSide,
@@ -336,13 +337,7 @@ class MMDLoader extends Loader {
 
 		if ( this.parser === null ) {
 
-			if ( typeof MMDParser === 'undefined' ) {
-
-				throw new Error( 'THREE.MMDLoader: Import MMDParser https://github.com/takahirox/mmd-parser' );
-
-			}
-
-			this.parser = new MMDParser.Parser(); // eslint-disable-line no-undef
+			this.parser = new MMDParser.Parser();
 
 		}
 
@@ -1114,6 +1109,14 @@ class MaterialBuilder {
 			params.emissive = new Color().fromArray( material.ambient );
 			params.transparent = params.opacity !== 1.0;
 
+			if ( ColorManagement.enabled === true ) {
+
+				params.diffuse.convertSRGBToLinear();
+				params.specular.convertSRGBToLinear();
+				params.emissive.convertSRGBToLinear();
+
+			}
+
 			//
 
 			params.fog = true;
@@ -1140,7 +1143,7 @@ class MaterialBuilder {
 
 			if ( data.metadata.format === 'pmd' ) {
 
-				// map, envMap
+				// map, matcap
 
 				if ( material.fileName ) {
 
@@ -1148,7 +1151,7 @@ class MaterialBuilder {
 					const fileNames = fileName.split( '*' );
 
 					// fileNames[ 0 ]: mapFileName
-					// fileNames[ 1 ]: envMapFileName( optional )
+					// fileNames[ 1 ]: matcapFileName( optional )
 
 					params.map = this._loadTexture( fileNames[ 0 ], textures );
 
@@ -1156,12 +1159,12 @@ class MaterialBuilder {
 
 						const extension = fileNames[ 1 ].slice( - 4 ).toLowerCase();
 
-						params.envMap = this._loadTexture(
+						params.matcap = this._loadTexture(
 							fileNames[ 1 ],
 							textures
 						);
 
-						params.combine = extension === '.sph'
+						params.matcapCombine = extension === '.sph'
 							? MultiplyOperation
 							: AddOperation;
 
@@ -1208,7 +1211,7 @@ class MaterialBuilder {
 
 				}
 
-				// envMap TODO: support m.envFlag === 3
+				// matcap TODO: support m.envFlag === 3
 
 				if ( material.envTextureIndex !== - 1 && ( material.envFlag === 1 || material.envFlag == 2 ) ) {
 
@@ -2082,6 +2085,8 @@ class MMDToonMaterial extends ShaderMaterial {
 
 		this.isMMDToonMaterial = true;
 
+		this.type = 'MMDToonMaterial';
+
 		this._matcapCombine = AddOperation;
 		this.emissiveIntensity = 1.0;
 		this.normalMapType = TangentSpaceNormalMap;
@@ -2165,7 +2170,6 @@ class MMDToonMaterial extends ShaderMaterial {
 
 			'alphaMap',
 
-			'envMap',
 			'reflectivity',
 			'refractionRatio',
 		];
