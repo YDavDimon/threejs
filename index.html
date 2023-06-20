@@ -8,12 +8,12 @@
 		canvas { width: 100%; height: 100% }
 		</style>
 		<link rel="stylesheet" href="./css/style.css">
+		<script src="./js/script.js"></script>
 		
 		
     </head>
 
     <body>
-
 		
 		<input type="checkbox" id="nav-toggle" hidden>
 
@@ -36,17 +36,17 @@
 					режим редактирования/перемещения
 				<li> <!-- Rounded switch -->
 					<label class="switch">
-					  <input type="checkbox">
+					  <input type="checkbox" id="add_or_remove">
 					  <span class="slider round"></span>
 					</label> добавить/удалить
 
 				<li> <!-- Rounded switch -->
 					<label class="switch">
 						
-					  <input type="checkbox">
+					  <input type="checkbox" id = "on_off_label" onclick="check_switch_label(event)">
 					  <span class="slider round"></span>
 					</label> 
-					включить визуализацию 
+					показать координаты 
 				
 				
 			</ul>
@@ -55,14 +55,18 @@
 
 		<script type="module">
 			import * as THREE from './build/three.module.js';
-			import * as ThreeCSG from './js/ThreeCSG.js';
-			import * as BufferGeometryUtils  from './js/BufferGeometryUtils.js';
+			//import * as ThreeCSG from './js/ThreeCSG.js';
+			//import * as BufferGeometryUtils  from './js/BufferGeometryUtils.js';
 			import {OrbitControls} from './js/jsm/controls/OrbitControls.js';
 			import {DragControls} from './js/DragControls.js';
-			import {FirstPersonControls} from './js/FirstPersonControls.js';
-			import { FlyControls } from './js/jsm/controls/FlyControls.js'
+			//import {FirstPersonControls} from './js/FirstPersonControls.js';
+			//import { FlyControls } from './js/jsm/controls/FlyControls.js'
 			import { FontLoader } from './js/jsm/loaders/FontLoader.js';
 			import { CSS2DObject, CSS2DRenderer } from './js/jsm/renderers/CSS2DRenderer.js';
+
+			
+
+
 			
 
 			let camera, drag_controls, orbit_controls, container, scene, renderer, labelRenderer;
@@ -73,23 +77,26 @@
 			let rollOverMesh, rollOverMaterial;
 			let cubeGeo, cubeMaterial;
 
-			let enableSelection = false;
+			let enableSelection;
 
 
 			const objects = [];
 			const cubes = [];
 			const snap_zones = [];
+			const beacons = [];
 			
 			const mouse = new THREE.Vector2();
 
-			let checkbox_control; 
-			checkbox_control = document.getElementById("move_or_edit");
+			let checkbox_control =  document.getElementById("move_or_edit");
+			let checkbox_add_or_remove = document.getElementById("add_or_remove");
+			let checkbox_on_off_label = document.getElementById("on_off_label");  
+			
 			
 
 			init();
 			animate();
 
-
+			
 			
 
 			function init() {
@@ -138,10 +145,13 @@
 
 				
 
+				
+
 				window.addEventListener( 'resize', onWindowResize );
 				document.addEventListener( 'pointermove', onPointerMove );
 				document.addEventListener( 'pointerdown', onPointerDown );
-				document.addEventListener( 'pointerup', onPointerUp );
+				
+				
 				
 				//controls
 
@@ -354,69 +364,73 @@
 
 				const beacon_geometry =new THREE.SphereGeometry(0.2, 32, 32, 0, Math.PI);
 				const box_geometry =new THREE.BoxGeometry(1, 0.1, 1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, 25, 8, 2.1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, 15, 8, 2.1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, 5, 8, 2.1);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, 25, 8, 19.9);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, 15, 8, 19.9);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, 5, 8, 19.9);
-				add_object(beacon_geometry, material_beacon, 0, 90, 0, 0.1, 8, 10);
-				add_object(beacon_geometry, material_beacon, 0, -90, 0, 29.9, 8, 10);
+
+				
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, 28, 8, 2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, 18, 5, 2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, 8, 8, 2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, 25, 8, 19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, 18, 5, 19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, 5, 8, 19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 90, 0, 0.1, 5, 12));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, -90, 0, 29.9, 8, 10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 15, 10, 10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, 15, 10, 10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, 15, 10, 10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 25, 10, 10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, 25, 10, 10);
-				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 5, 10, 10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, 5, 10, 10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, 25, 10, 10));
+				beacons.push(add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 5, 10, 10));
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, 5, 10, 10));
 
 
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, 25, 8, -2.1);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, 15, 8, -2.1);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, 5, 8, -2.1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, 25, 8, -19.9);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, 15, 8, -19.9);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, 5, 8, -19.9);
-				add_object(beacon_geometry, material_beacon, 0, 90, 0, 0.1, 8, -10);
-				add_object(beacon_geometry, material_beacon, 0, -90, 0, 29.9, 8, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, 28, 5, -2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, 18, 8, -2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, 8, 5, -2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, 25, 8, -19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, 15, 5, -19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, 5, 8, -19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 90, 0, 0.1, 5, -10));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, -90, 0, 29.9, 8, -10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 15, 10, -10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, 15, 10, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, 15, 10, -10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 25, 10, -10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, 25, 10, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, 25, 10, -10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, 5, 10, -10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, 5, 10, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, 5, 10, -10));
 
 
 
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, -5, 8, -2.1);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, -15, 8, -2.1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, -5, 8, -19.9);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, -15, 8, -19.9);
-				add_object(beacon_geometry, material_beacon, 0, 90, 0, -20, 8, 10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, -8, 8, -2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, -12, 5, -2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, -5, 8, -19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, -12, 5, -19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 90, 0, -20, 8, 10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -5, 10, -10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, -5, 10, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, -5, 10, -10));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -15, 10, -10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, -15, 10, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, -15, 10, -10));
 				
 
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, -5, 8, 2.1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, -15, 8, 2.1);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, -5, 8, 19.9);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, -15, 8, 19.9);
-				add_object(beacon_geometry, material_beacon, 0, 90, 0, -20, 8, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, -8, 8, 2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, -18, 5, 2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, -5, 8, 19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, -15, 8, 19.9));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 90, 0, -20, 8, -12));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -5, 10, 10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, -5, 10, 10);
-				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -15, 10, 10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, -15, 10, 10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, -5, 10, 10));
+				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -10, 10, 10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, -10, 10, 10));
 
-				add_object(beacon_geometry, material_beacon, 0, 90, 0, -29.9, 8, 2.1);
-				add_object(beacon_geometry, material_beacon, 0, 180, 0, -29.9, 8, 19.9);
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 90, 0, -23, 5, 2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 180, 0, -29.9, 8, 19.9));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -25, 10, 10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, -25, 10, 10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, -25, 10, 10));
 
-				add_object(beacon_geometry, material_beacon, 0, 90, 0, -29.9, 8, -2.1);
-				add_object(beacon_geometry, material_beacon, 0, 0, 0, -29.9, 8, -19.9);
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 90, 0, -23, 5, -2.1));
+				beacons.push(add_object(beacon_geometry, material_beacon, 0, 0, 0, -29.9, 8, -19.9));
 				add_object(box_geometry, material_walls_outside_right, 0, 0, 0, -25, 10, -10);
-				add_object(beacon_geometry, material_beacon, 90, 0, 0, -25, 10, -10);
+				beacons.push(add_object(beacon_geometry, material_beacon, 90, 0, 0, -25, 10, -10));
+
+				
 
 
 				//sphere add
@@ -548,14 +562,18 @@
 					 add_object(geometry_vertical,  material_back_wall, 0, 0, 0, pos_x+2.5, 5, pos_z+1);
 
 					 const horizontal_1 = add_object(geometry_horizontal,  material_back_wall, 0, 0, 0,pos_x, 3, pos_z);
+					 horizontal_1.name = "horizontal";
 					 objects.push(horizontal_1);
 					 snap_zones.push(horizontal_1);
 					 const horizontal_2 = add_object(geometry_horizontal,  material_back_wall, 0, 0, 0, pos_x, 6, pos_z);
+					 horizontal_2.name = "horizontal";
 					 objects.push(horizontal_2);
 					 snap_zones.push(horizontal_2);
 					 const horizontal_3 = add_object(geometry_horizontal,  material_back_wall, 0, 0, 0, pos_x, 9, pos_z);
+					 horizontal_3.name = "horizontal";
 					 objects.push(horizontal_3);
 					 snap_zones.push(horizontal_3);
+				
 
 				}
 
@@ -639,9 +657,11 @@
 
 				return closestTarget;
 				}
+				
+				
 
 			//
-
+			
 			
 			drag_controls.addEventListener('drag', function (event) {
 				const object = event.object;
@@ -650,10 +670,160 @@
 				if (closestTarget) {
 					object.position.y = closestTarget.position.y;
 					object.position.add(new THREE.Vector3(0, 0.75, 0 ))
-					//object.position.copy(closestTarget.position); // Привязываем позицию объекта к позиции ближайшего целевого объекта
+				}
+
+				let distance;
+				let count = 0;
+				let beacons_pos = [];
+				let distances = [];
+				for (let item of beacons) {
+					distance = calculateDistance(item.position.x, item.position.y, item.position.z, event.object.position.x, event.object.position.y, event.object.position.z);
+					if (distance < 15) {
+						
+						
+						if (count == 3) break;
+						
+							beacons_pos.push(item.position);
+							distances.push(distance);
+						
+						
+						count++;
+						
+						
+					};
+					
+					
 					
 				}
+				for (let i = 0; i< beacons_pos.length; i++) {
+					beacons_pos[i].r = distances[i];
+					
+				}
+
+				let res_trilaterate = trilaterate(beacons_pos[0], beacons_pos[1], beacons_pos[2], true);
+				let labels = document.getElementsByClassName(object.name);
+				labels.item(0).innerHTML = 'x: ' + object.position.x.toFixed(3) + '<br/>' + 'y: ' + object.position.y.toFixed(3) + '<br/>' + 'z: ' + object.position.z.toFixed(3);
+				labels.item(1).innerHTML = 'x: ' + res_trilaterate.x.toFixed(3) + '<br/>' + 'y: ' + res_trilaterate.y.toFixed(3) + '<br/>' + 'z: ' + res_trilaterate.z.toFixed(3);
 			});
+
+			
+			function calculateDistance(x1, y1, z1, x2, y2, z2) {
+				var dx = x2 - x1;
+				var dy = y2 - y1;
+				var dz = z2 - z1;
+
+				var distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+				return distance;
+			}
+
+
+			function trilaterate(p1, p2, p3, return_middle) {
+				
+				function sqr(a)
+				{
+					return a * a;
+				}
+				
+				function norm(a)
+				{
+					return Math.sqrt(sqr(a.x) + sqr(a.y) + sqr(a.z));
+				}
+				
+				function dot(a, b)
+				{
+					return a.x * b.x + a.y * b.y + a.z * b.z;
+				}
+				
+				function vector_subtract(a, b)
+				{
+					return {
+						x: a.x - b.x,
+						y: a.y - b.y,
+						z: a.z - b.z
+					};
+				}
+				
+				function vector_add(a, b)
+				{
+					return {
+						x: a.x + b.x,
+						y: a.y + b.y,
+						z: a.z + b.z
+					};
+				}
+				
+				function vector_divide(a, b)
+				{
+					return {
+						x: a.x / b,
+						y: a.y / b,
+						z: a.z / b
+					};
+				}
+				
+				function vector_multiply(a, b)
+				{
+					return {
+						x: a.x * b,
+						y: a.y * b,
+						z: a.z * b
+					};
+				}
+				
+				function vector_cross(a, b)
+				{
+					return {
+						x: a.y * b.z - a.z * b.y,
+						y: a.z * b.x - a.x * b.z,
+						z: a.x * b.y - a.y * b.x
+					};
+				}
+				
+				var ex, ey, ez, i, j, d, a, x, y, z, b, p4a, p4b;
+				
+				ex = vector_divide(vector_subtract(p2, p1), norm(vector_subtract(p2, p1)));
+				
+				i = dot(ex, vector_subtract(p3, p1));
+				a = vector_subtract(vector_subtract(p3, p1), vector_multiply(ex, i));
+				ey = vector_divide(a, norm(a));
+				ez =  vector_cross(ex, ey);
+				d = norm(vector_subtract(p2, p1));
+				j = dot(ey, vector_subtract(p3, p1));
+				
+				x = (sqr(p1.r) - sqr(p2.r) + sqr(d)) / (2 * d);
+				y = (sqr(p1.r) - sqr(p3.r) + sqr(i) + sqr(j)) / (2 * j) - (i / j) * x;
+				
+				b = sqr(p1.r) - sqr(x) - sqr(y);
+				
+				
+				if (Math.abs(b) < 0.0000000001)
+				{
+					b = 0;
+				}
+				
+				z = Math.sqrt(b);
+				
+				
+				if (isNaN(z))
+				{
+					return null;
+				}
+				
+				a = vector_add(p1, vector_add(vector_multiply(ex, x), vector_multiply(ey, y)))
+				p4a = vector_add(a, vector_multiply(ez, z));
+				p4b = vector_subtract(a, vector_multiply(ez, z));
+				
+				if (z == 0 || return_middle)
+				{
+					return a;
+				}
+				else
+				{
+					return [ p4a, p4b ];
+				}
+			}
+			
 			
 
 			function onPointerMove( event ) {
@@ -707,8 +877,20 @@
 
 			}
 
-
+			let count_name = 0;
+			
+			
 			function onPointerDown( event ) {
+				const voxel = new THREE.Mesh( cubeGeo, cubeMaterial);
+				let element;
+				let label;
+				let label2;
+				
+
+				label = new CSS2DObject(element);
+				label2 = new CSS2DObject(element);
+				
+				
 
 				if (checkbox_control.checked) {
 					drag_controls.enabled =false;
@@ -720,25 +902,119 @@
 					if ( intersects.length > 0 ) {
 
 						const intersect = intersects[ 0 ];
-						const voxel = new THREE.Mesh( cubeGeo, cubeMaterial);
-						voxel.position.copy( intersect.point ).add( intersect.face.normal );
+
+						if ( checkbox_add_or_remove.checked ) {
+
+							if ( intersect.object != plane && intersect.object.name != 'horizontal') {
+
+								container = document.getElementsByClassName('label '+ String(intersect.object.name));
+
+								console.log(container);
+								
+								if (container !== null) {
+									let parent = container.item(0).parentNode;
+
+									parent.removeChild(container.item(0));
+									parent.removeChild(container.item(0));
+									
+								}
+								
+								scene.remove( intersect.object );
+								objects.splice( objects.indexOf( intersect.object ), 1 );
+
+							}
+
+							// create cube
+
+						}
+
+						else {
+							
+
+							label.element = document.createElement('div');
+							label.element.classList.add('label', count_name) ;
+							
+							
+							voxel.position.copy( intersect.point ).add( intersect.face.normal );
 
 							if ( intersect.object == plane ) {
 								voxel.position.round().add(new THREE.Vector3( 0.5, -0.25, 0.5 ));
-								scene.add(voxel);
-								objects.push(voxel);
-								cubes.push(voxel);
-								
 							}
-
 							else {
-							voxel.position.round().add(new THREE.Vector3( 0.5, -0.4, 0.5 ));
-							scene.add(voxel);
+								voxel.position.round().add(new THREE.Vector3( 0.5, -0.4, 0.5 ));
+							}
+									
 							objects.push(voxel);
 							cubes.push(voxel);
-							}
 
+										
+							label.element.innerHTML = 'x: ' + String(voxel.position.x.toFixed(3)) + '<br/>' + 'y: ' + String(voxel.position.y.toFixed(3)) + '<br/>' + 'z: ' + String(voxel.position.z.toFixed(3));
+		
+							label.position.z = label.position.z + 2;
+							//label.name = count_name;
+							voxel.name = count_name;
+							scene.add(voxel);
+							voxel.add(label);
+									
+									
+							
+
+							//trilaterate
+							let res_trilaterate;
+							let distance;
+							let count = 0;
+							let beacons_pos = [];
+							let distances = [];
+							for (let item of beacons) {
+								distance = calculateDistance(item.position.x, item.position.y, item.position.z, voxel.position.x, voxel.position.y, voxel.position.z);
+								if (distance < 15) {
+									
+									
+									if (count == 3) break;
+									
+										beacons_pos.push(item.position);
+										distances.push(distance);
+									
+									
+									count++;
+									
+									
+								};
+								
+								
+								
+							}
+							for (let i = 0; i< beacons_pos.length; i++) {
+								beacons_pos[i].r = distances[i];
+								
+							}
+							console.log(beacons_pos);
+							console.log(distances);
+							
+							
+							res_trilaterate = trilaterate(beacons_pos[0], beacons_pos[1], beacons_pos[2], true);
+
+							console.log(res_trilaterate.x);
+							
+							 label2.element = document.createElement('div');
+							 label2.element.classList.add('label', count_name);
+							 
+							 
+
+							 label2.element.innerHTML = 'x: ' + String(res_trilaterate.x.toFixed(3)) + '<br/>' + 'y: ' + String(res_trilaterate.y.toFixed(3)) + '<br/>' + 'z: ' + String(res_trilaterate.z.toFixed(3));
+		
+							label2.position.z = label2.position.z - 2;
+							voxel.add(label2);
+
+							count_name++;
+															
+						}
+
+						
+
+						
 					}
+					
 				}
 
 				else {
@@ -749,17 +1025,11 @@
 
 			}
 
-			function onPointerUp(event) {
-				
-
-			}
 			
 			
+					
 
-
-		
-
-
+			
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
@@ -770,7 +1040,8 @@
 
 			function animate() {
 				requestAnimationFrame( animate );
-				orbit_controls.update(0.05); 
+				orbit_controls.update(0.5); 
+				
 				
 				
 				render();
@@ -779,7 +1050,8 @@
 
 			function render() {
 				renderer.render( scene, camera );
-				camera.updateMatrixWorld();
+				labelRenderer.render( scene, camera );
+				
 			}
 
 			
