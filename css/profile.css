@@ -1,0 +1,53 @@
+/* Общие стили для страницы профиля */
+body {
+    background-color: #f1f1f1;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h2 {
+    text-align: center;
+  }
+  
+  a.back {
+    display: block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #333;
+  }
+  
+  a.back:hover {
+    text-decoration: underline;
+  }
+  
+  div {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logout {
+    display: block;
+    margin-top: 20px;
+    text-decoration: none;
+    color: #333;
+    text-align: center;
+  }
+  
+  .logout:hover {
+    text-decoration: underline;
+  }
+  
+  p.message {
+    color: red;
+    text-align: center;
+    margin-bottom: 10px;
+  }
