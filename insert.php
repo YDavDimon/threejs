@@ -10,7 +10,6 @@ $user_id = $_SESSION['user']['id'];
     $object_id = $_POST['id'];
     $current_position = $_POST['current_position'];
     $previous_position = $_POST['previous_position'];
-
     
 
     // Подготовка и выполнение запроса на вставку данных
