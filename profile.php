@@ -22,7 +22,8 @@
     <br>
     <br>
     <?php 
-    echo "id ".$_SESSION['user']['id']. "<br>";
+    
+    echo "логин: ".$_SESSION['user']['login']. "<br>";
     echo "Полное имя: ".$_SESSION['user']['full_name']. "<br>";
     echo "email: ".$_SESSION['user']['email']. "<br>";
     echo "status: ".$_SESSION['user']['status'];

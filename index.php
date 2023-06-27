@@ -25,18 +25,11 @@ require_once './connect.php';
 
 		<nav class="nav">
 
-			<?php 
-				echo('<a href="./auth.php" title="войти">
-					<div class="btn"> Войти </div>
-					</a>  
-			
-					<a href="./reg.php" title="зарегистрироваться">
-					<div class="btn"> Регистрация </div>
-					</a>');
-			?>
+		<?php require_once './reg_auth.php' ?>
+
 
 			<label for="nav-toggle" class="nav-toggle" onclick></label>
-			
+			 
 			<h2 class="logo"> 
 				<a href="">menu</a> 
 			</h2>
@@ -49,20 +42,14 @@ require_once './connect.php';
 					  <span class="slider round"></span>
 					  
 					</label> 
-					режим редактирования/перемещения
+					режим перемещения/редактирования
 				<li> <!-- Rounded switch -->
 					<label class="switch">
 					  <input type="checkbox" id="add_or_remove">
 					  <span class="slider round"></span>
 					</label> добавить/удалить
 
-				<li> <!-- Rounded switch -->
-					<label class="switch">
-						
-					  <input type="checkbox" id = "on_off_label" onclick="check_switch_label(event)">
-					  <span class="slider round"></span>
-					</label> 
-					показать координаты 
+				
 				
 				
 			</ul>
@@ -71,12 +58,10 @@ require_once './connect.php';
 
 		<script type="module">
 			import * as THREE from './build/three.module.js';
-			//import * as ThreeCSG from './js/ThreeCSG.js';
-			//import * as BufferGeometryUtils  from './js/BufferGeometryUtils.js';
+
 			import {OrbitControls} from './js/jsm/controls/OrbitControls.js';
 			import {DragControls} from './js/DragControls.js';
-			//import {FirstPersonControls} from './js/FirstPersonControls.js';
-			//import { FlyControls } from './js/jsm/controls/FlyControls.js'
+
 			import { FontLoader } from './js/jsm/loaders/FontLoader.js';
 			import { CSS2DObject, CSS2DRenderer } from './js/jsm/renderers/CSS2DRenderer.js';
 
@@ -173,18 +158,11 @@ require_once './connect.php';
 
 				drag_controls = new DragControls( cubes, camera, renderer.domElement );				
 
-				// controls2 = new FirstPersonControls( camera, renderer.domElement );
-				// controls2.movementSpeed = 5;
-				// controls2.heightMax =0.1;
-				// controls2.lookSpeed = 0.05;
 				
 
 				orbit_controls = new OrbitControls( camera, renderer.domElement );
 
-				
-				
-				
-
+			
 				//axes
 
 				const axesHelper = new THREE.AxesHelper( 100 );
@@ -453,22 +431,6 @@ require_once './connect.php';
 				
 
 				const sphere_geometry =new THREE.SphereGeometry(10  , 32, 32);
-				// add_object(sphere_geometry, material_sphere, 0, 0, 0, 25, 8, 2.1);
-				// add_object(sphere_geometry, material_sphere, 0, 0, 0, 15, 8, 2.1);
-				// add_object(sphere_geometry, material_sphere, 0, 0, 0, 5, 8, 2.1);
-				// add_object(sphere_geometry, material_sphere, 0, 180, 0, 25, 8, 19.9);
-				// add_object(sphere_geometry, material_sphere, 0, 180, 0, 15, 8, 19.9);
-				// add_object(sphere_geometry, material_sphere, 0, 180, 0, 5, 8, 19.9);
-				// add_object(sphere_geometry, material_sphere, 0, 90, 0, 0.1, 8, 10);
-				// add_object(sphere_geometry, material_sphere, 0, -90, 0, 29.9, 8, 10);
-				// add_object(sphere_geometry, material_sphere, 0, 0, 0, 15, 10, 10);
-				// add_object(sphere_geometry, material_sphere, 90, 0, 0, 15, 10, 10);
-				
-
-				// add_object(sphere_geometry, material_sphere, 0, 180, 0, -5, 8, -2.1);
-				// add_object(sphere_geometry, material_sphere, 0, 180, 0, -15, 8, -2.1);
-				// add_object(sphere_geometry, material_sphere, 0, 0, 0, -5, 8, -19.9);
-				// add_object(sphere_geometry, material_sphere, 0, 0, 0, -15, 8, -19.9);
 
 				//side walls
 				const geometry_box_outside_walls_up_1 = new THREE.BoxGeometry(5, 0.2, 40 );
@@ -649,6 +611,78 @@ require_once './connect.php';
 
 				raycaster = new THREE.Raycaster();
 				pointer = new THREE.Vector2();
+
+
+				//
+				let result;
+
+				function get_data() {
+					return new Promise(function(resolve){
+						$.ajax({
+						url: './get_objects.php', 
+						type: 'GET',
+						success: function(response) {
+							if (response.success) {
+								//count_name = response.data[1];
+							}
+							resolve(response);
+						}
+						});
+					});
+				}
+
+				get_data()
+				.then(function(response) {
+
+					console.log(response.data);
+					
+					let element;
+					let label;
+					let label2;
+					
+
+
+					for (let item of response.data) {
+						
+						const voxel = new THREE.Mesh( cubeGeo, cubeMaterial);
+						label = new CSS2DObject(element);
+						label2 = new CSS2DObject(element);
+						label.element = document.createElement('div');
+						label2.element = document.createElement('div');
+
+						
+
+						voxel.position.copy(JSON.parse(item.real_current_location));
+						let current_location = JSON.parse(item.current_location);
+
+							
+									
+							objects.push(voxel);
+							cubes.push(voxel);
+
+										
+							label.element.innerHTML = 'x: ' + String(voxel.position.x.toFixed(3)) + '<br/>' + 'y: ' + String(voxel.position.y.toFixed(3)) + '<br/>' + 'z: ' + String(voxel.position.z.toFixed(3));
+		
+							label.position.z = label.position.z + 2;
+
+							label2.element.innerHTML = 'x: ' + String(current_location.x.toFixed(3)) + '<br/>' + 'y: ' + String(current_location.y.toFixed(3)) + '<br/>' + 'z: ' + String(current_location.z.toFixed(3));
+		
+							label2.position.z = label2.position.z - 2;
+
+							voxel.name = item.object_id;
+							label.element.classList.add('label', item.object_id);
+							label2.element.classList.add('label', item.object_id);
+
+							scene.add(voxel);
+							voxel.add(label);
+							voxel.add(label2);
+
+						
+					}
+					
+				
+				
+				});
 				
 
 			}
@@ -720,6 +754,86 @@ require_once './connect.php';
 				let labels = document.getElementsByClassName(object.name);
 				labels.item(0).innerHTML = 'x: ' + object.position.x.toFixed(3) + '<br/>' + 'y: ' + object.position.y.toFixed(3) + '<br/>' + 'z: ' + object.position.z.toFixed(3);
 				labels.item(1).innerHTML = 'x: ' + res_trilaterate.x.toFixed(3) + '<br/>' + 'y: ' + res_trilaterate.y.toFixed(3) + '<br/>' + 'z: ' + res_trilaterate.z.toFixed(3);
+			});
+
+
+			drag_controls.addEventListener('dragend', function (event) {
+				const object = event.object;
+				const position = object.position.clone();
+				const closestTarget = findClosestTarget(position, snap_zones); // Находим ближайший целевой объект
+				if (closestTarget) {
+					object.position.y = closestTarget.position.y;
+					object.position.add(new THREE.Vector3(0, 0.75, 0 ))
+				}
+
+				let distance;
+				let count = 0;
+				let beacons_pos = [];
+				let distances = [];
+				for (let item of beacons) {
+					distance = calculateDistance(item.position.x, item.position.y, item.position.z, event.object.position.x, event.object.position.y, event.object.position.z);
+					if (distance < 15) {
+						
+						
+						if (count == 3) break;
+						
+							beacons_pos.push(item.position);
+							distances.push(distance);
+						
+						
+						count++;
+						
+						
+					};
+					
+					
+					
+				}
+				for (let i = 0; i< beacons_pos.length; i++) {
+					beacons_pos[i].r = distances[i];
+					
+				}
+
+				let res_trilaterate = trilaterate(beacons_pos[0], beacons_pos[1], beacons_pos[2], true);
+				let labels = document.getElementsByClassName(object.name);
+				labels.item(0).innerHTML = 'x: ' + object.position.x.toFixed(3) + '<br/>' + 'y: ' + object.position.y.toFixed(3) + '<br/>' + 'z: ' + object.position.z.toFixed(3);
+				labels.item(1).innerHTML = 'x: ' + res_trilaterate.x.toFixed(3) + '<br/>' + 'y: ' + res_trilaterate.y.toFixed(3) + '<br/>' + 'z: ' + res_trilaterate.z.toFixed(3);
+
+				let now = new Date();			
+				let formattedTime = now.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+
+				// Выполняем AJAX-запрос
+				// Отправляем данные через AJAX
+				function make_request() {
+					return new Promise(function(resolve){
+						$.ajax({
+						url: './change_on_drag.php',  
+						method: 'POST',
+						data: {
+							object_id: object.name,
+							real_current_location: JSON.stringify(object.position),
+							current_location: JSON.stringify(res_trilaterate),
+							time: formattedTime
+							
+
+						},
+						success: function(response) {
+							alert('Данные успешно отправлены в базу данных!');
+							resolve(response);
+						}
+						});
+					});	
+					
+				}
+
+				make_request()
+				.then(function(result) {
+					
+				});
+
+				
+				
+
 			});
 
 			
@@ -893,7 +1007,8 @@ require_once './connect.php';
 
 			}
 
-			let count_name = 0;
+			let count_name;
+			
 			
 			
 			function onPointerDown( event ) {
@@ -913,11 +1028,11 @@ require_once './connect.php';
 					
 					pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
 					raycaster.setFromCamera( pointer, camera );
-					const intersects = raycaster.intersectObjects( objects, false );
+					let intersects = raycaster.intersectObjects( objects, false );
 
 					if ( intersects.length > 0 ) {
 
-						const intersect = intersects[ 0 ];
+						let intersect = intersects[ 0 ];
 
 						if ( checkbox_add_or_remove.checked ) {
 
@@ -925,18 +1040,55 @@ require_once './connect.php';
 
 								container = document.getElementsByClassName('label '+ String(intersect.object.name));
 
-								console.log(container);
 								
+								
+								
+
+								//delete from db
+
+								console.log(intersect.object.name);
+
+								function make_request() {
+								return new Promise(function(resolve){
+									$.ajax({
+									url: './delete.php', 
+									method: 'POST',
+									data: {
+										object_id: intersect.object.name
+									},
+									success: function(response) {
+										
+										//alert('Данные успешно отправлены в базу данных!');
+										
+										resolve(response);
+									}
+									});
+								});	
+								
+							}
+
+							make_request()
+							.then(function(response) {
+
 								if (container !== null) {
 									let parent = container.item(0).parentNode;
 
 									parent.removeChild(container.item(0));
 									parent.removeChild(container.item(0));
+
+									scene.remove( intersect.object );
+								objects.splice( objects.indexOf( intersect.object ), 1 );
+
 									
 								}
 								
-								scene.remove( intersect.object );
-								objects.splice( objects.indexOf( intersect.object ), 1 );
+								
+								
+							});
+
+								
+								
+								
 
 							}
 
@@ -944,116 +1096,203 @@ require_once './connect.php';
 
 						}
 
+						
+
 						else {
-							
-
-							label.element = document.createElement('div');
-							label.element.classList.add('label', count_name) ;
-							
-							
-							voxel.position.copy( intersect.point ).add( intersect.face.normal );
-
-							if ( intersect.object == plane ) {
-								voxel.position.round().add(new THREE.Vector3( 0.5, -0.25, 0.5 ));
+							let session = null;
+							function get_session_value() {
+								return new Promise(function(resolve){
+									$.ajax({
+									url: './get_session_value.php', 
+									type: 'GET',
+									success: function(response) {
+										if (response.success) {
+											
+										}
+										resolve(response);
+									}
+									});
+								});
 							}
-							else {
-								voxel.position.round().add(new THREE.Vector3( 0.5, -0.4, 0.5 ));
-							}
+
+							get_session_value()
+							.then(function(response) {
+								session = response.data;
+								console.log(session);
+
+								if (session != null) {
+
+									label.element = document.createElement('div');
+								
+								
+								
+									voxel.position.copy( intersect.point ).add( intersect.face.normal );
+
+									if ( intersect.object == plane ) {
+										voxel.position.round().add(new THREE.Vector3( 0.5, -0.25, 0.5 ));
+									}
+									else {
+										voxel.position.round().add(new THREE.Vector3( 0.5, -0.4, 0.5 ));
+									}
+											
+									objects.push(voxel);
+									cubes.push(voxel);
+
+												
+									label.element.innerHTML = 'x: ' + String(voxel.position.x.toFixed(3)) + '<br/>' + 'y: ' + String(voxel.position.y.toFixed(3)) + '<br/>' + 'z: ' + String(voxel.position.z.toFixed(3));
+				
+									label.position.z = label.position.z + 2;
 									
-							objects.push(voxel);
-							cubes.push(voxel);
+									
 
+									//let object_id = count_name;
+									
+
+									//trilaterate
+									let res_trilaterate;
+									let distance;
+									let count = 0;
+									let beacons_pos = [];
+									let distances = [];
+									for (let item of beacons) {
+										distance = calculateDistance(item.position.x, item.position.y, item.position.z, voxel.position.x, voxel.position.y, voxel.position.z);
+										if (distance < 15) {
+											
+											
+											if (count == 3) break;
+											
+												beacons_pos.push(item.position);
+												distances.push(distance);
+											
+											
+											count++;
+											
+											
+										};
 										
-							label.element.innerHTML = 'x: ' + String(voxel.position.x.toFixed(3)) + '<br/>' + 'y: ' + String(voxel.position.y.toFixed(3)) + '<br/>' + 'z: ' + String(voxel.position.z.toFixed(3));
-		
-							label.position.z = label.position.z + 2;
-							//label.name = count_name;
-							voxel.name = count_name;
-							scene.add(voxel);
-							voxel.add(label);
+										
+										
+									}
+									for (let i = 0; i< beacons_pos.length; i++) {
+										beacons_pos[i].r = distances[i];
+										
+									}
+									//console.log(beacons_pos);
+									//console.log(distances);
 									
-							
-							
+									
+									res_trilaterate = trilaterate(beacons_pos[0], beacons_pos[1], beacons_pos[2], true);
 
-							// Выполняем AJAX-запрос
-							
+									//console.log(res_trilaterate.x);
+									
+									label2.element = document.createElement('div');
+									
+									
+									
 
-							let object_id = count_name;
-							
-							let current_position = JSON.stringify(voxel.position);
-							let previous_position = JSON.stringify(voxel.position);
+									label2.element.innerHTML = 'x: ' + String(res_trilaterate.x.toFixed(3)) + '<br/>' + 'y: ' + String(res_trilaterate.y.toFixed(3)) + '<br/>' + 'z: ' + String(res_trilaterate.z.toFixed(3));
+				
+									label2.position.z = label2.position.z - 2;
 
-							
 
-							// Отправляем данные через AJAX
-							$.ajax({
-							url: './insert.php', // Путь к вашему PHP-скрипту для обработки запроса
-							method: 'POST',
-							data: {
-								id: object_id,
-								current_position: current_position,
-								previous_position: previous_position
+									let now = new Date();
 
-							},
-							success: function(response) {
-								alert('Данные успешно отправлены в базу данных!');
+									
+									let formattedTime = now.toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+									
+									// Выполняем AJAX-запрос
+									// Отправляем данные через AJAX
+									function make_request() {
+										return new Promise(function(resolve){
+											$.ajax({
+											url: './insert.php', 
+											method: 'POST',
+											data: {
+												real_current_location: JSON.stringify(voxel.position),
+												current_location: JSON.stringify(res_trilaterate),
+												time: formattedTime
+												
 
-							}
+											},
+											success: function(response) {
+												alert('Данные успешно отправлены в базу данных!');
+												resolve(response);
+											}
+											});
+										});	
+										
+									}
+
+									make_request()
+									.then(function(result) {
+										
+									});
+									
+
+									let result;
+
+									function get_data() {
+										return new Promise(function(resolve){
+											$.ajax({
+											url: './get_id.php', 
+											type: 'GET',
+											success: function(response) {
+												if (response.success) {
+													//count_name = response.data[1];
+												}
+												resolve(response);
+											}
+											});
+										});
+									}
+
+									get_data()
+									.then(function(response) {
+										
+										for (let item of response.data) {
+											let pos = JSON.parse(item.real_current_location);
+											
+
+											if (pos.x == voxel.position.x && pos.y == voxel.position.y && pos.z == voxel.position.z) {
+												voxel.name = item.object_id;
+												label.element.classList.add('label', item.object_id);
+												label2.element.classList.add('label', item.object_id);
+
+												
+												
+												
+												
+											}
+											
+										}
+										
+									//console.log(voxel);
+									//console.log(voxel.name);
+									scene.add(voxel);
+									voxel.add(label);
+									voxel.add(label2);
+									
+									});
+									
+								}
+								
+								else {
+									alert("signin first!");
+								}
 							});
-
-		
+						}	
 							
 
-							//trilaterate
-							let res_trilaterate;
-							let distance;
-							let count = 0;
-							let beacons_pos = [];
-							let distances = [];
-							for (let item of beacons) {
-								distance = calculateDistance(item.position.x, item.position.y, item.position.z, voxel.position.x, voxel.position.y, voxel.position.z);
-								if (distance < 15) {
-									
-									
-									if (count == 3) break;
-									
-										beacons_pos.push(item.position);
-										distances.push(distance);
-									
-									
-									count++;
-									
-									
-								};
-								
-								
-								
-							}
-							for (let i = 0; i< beacons_pos.length; i++) {
-								beacons_pos[i].r = distances[i];
-								
-							}
-							console.log(beacons_pos);
-							console.log(distances);
+
 							
 							
-							res_trilaterate = trilaterate(beacons_pos[0], beacons_pos[1], beacons_pos[2], true);
 
-							console.log(res_trilaterate.x);
 							
-							 label2.element = document.createElement('div');
-							 label2.element.classList.add('label', count_name);
-							 
-							 
 
-							 label2.element.innerHTML = 'x: ' + String(res_trilaterate.x.toFixed(3)) + '<br/>' + 'y: ' + String(res_trilaterate.y.toFixed(3)) + '<br/>' + 'z: ' + String(res_trilaterate.z.toFixed(3));
-		
-							label2.position.z = label2.position.z - 2;
-							voxel.add(label2);
+							
 
-							count_name++;
 															
-						}
+						
 
 						
 

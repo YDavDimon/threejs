@@ -10,7 +10,7 @@
     require_once 'login_check.php';
     require_once 'email_check.php';
 
-    if ($password === $confirm) {
+    if ($password === $confirm && !empty($full_name) && !empty($login) && !empty($email) && !empty($password) && !empty($confirm)) {
         $rndm = rand(); 
 
         $password = hash("sha256",$password.$rndm);
@@ -24,7 +24,7 @@
 
     }
     else {
-        $_SESSION['message'] = 'ошибка при вводе пароля';
+        $_SESSION['message'] = 'ошибка';
         header('Location:./reg.php');
         
     }

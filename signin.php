@@ -16,6 +16,7 @@
             $_SESSION['user'] = [
                 "id" => $user['id'],
                 "full_name" => $user['name'],
+                "login" => $user['login'],
                 "email" => $user['email'],
                 "status" => $user['status']
             ];

@@ -2,18 +2,17 @@
 session_start();
 require_once "./connect.php";
 
-$user_id = $_SESSION['user']['id'];
+    $user_id = $_SESSION['user']['id'];
 
 
 
-   
-    $object_id = $_POST['id'];
-    $current_position = $_POST['current_position'];
-    $previous_position = $_POST['previous_position'];
+    $current_location = $_POST['current_location'];
+    $real_current_location = $_POST['real_current_location'];
+    $time = $_POST['time'];
     
 
     // Подготовка и выполнение запроса на вставку данных
-    $sql = "INSERT INTO location (object_id, user_id, current_location, previous_location) VALUES (NULL, $user_id, '$current_position', '$previous_position')";
+    $sql = "INSERT INTO location (object_id, user_id, current_location, real_current_location, time) VALUES (NULL, $user_id, '$current_location', '$real_current_location', '$time')";
     $conn->query($sql);
     
 
